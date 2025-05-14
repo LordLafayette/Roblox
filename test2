@@ -1,16 +1,34 @@
--- Add a ReplicatedStorage lister with collapsible folders to your executorFrame
+-- ReplicatedStorage lister with collapsible folders, always visible on play screen
+
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local listGui = Instance.new("ScreenGui")
+listGui.Name = "ReplicatedStorageLister"
+listGui.Parent = playerGui
 
 local listFrame = Instance.new("Frame")
-listFrame.Parent = executorFrame
-listFrame.Size = UDim2.new(0.9, 0, 0.55, 0)
-listFrame.Position = UDim2.new(0.05, 0, 0.15, 0)
+listFrame.Parent = listGui
+listFrame.Size = UDim2.new(0.3, 0, 0.5, 0)
+listFrame.Position = UDim2.new(0.65, 0, 0.25, 0)
 listFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 listFrame.BorderSizePixel = 0
+listFrame.Active = true
+listFrame.Draggable = true
+
+local title = Instance.new("TextLabel")
+title.Parent = listFrame
+title.Size = UDim2.new(1, 0, 0.1, 0)
+title.BackgroundTransparency = 1
+title.Text = "ReplicatedStorage Items"
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 22
+title.TextColor3 = Color3.new(1, 1, 1)
 
 local scroll = Instance.new("ScrollingFrame")
 scroll.Parent = listFrame
-scroll.Size = UDim2.new(1, -8, 1, -8)
-scroll.Position = UDim2.new(0, 4, 0, 4)
+scroll.Size = UDim2.new(1, -8, 0.85, -8)
+scroll.Position = UDim2.new(0, 4, 0.12, 4)
 scroll.BackgroundTransparency = 1
 scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 scroll.ScrollBarThickness = 8
@@ -75,8 +93,7 @@ local function listFolderItems(folder, indent)
     for _, item in ipairs(folder:GetChildren()) do
         if item.ClassName == "Folder" then
             local collapsed = collapseState[item] or false
-            local row
-            row = createRow(scroll, item.Name .. " (" .. item.ClassName .. ")", indent, true, collapsed, function()
+            createRow(scroll, item.Name .. " (" .. item.ClassName .. ")", indent, true, collapsed, function()
                 collapseState[item] = not collapsed
                 listItems()
             end)
