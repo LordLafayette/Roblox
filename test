@@ -1,100 +1,82 @@
--- ReplicatedStorage Lister with Folder sub-listing
+-- Creates a GUI that lists all items in ReplicatedStorage
 
-local listGui = Instance.new("ScreenGui")
-listGui.Name = "ReplicatedStorageLister"
-listGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ReplicatedStorageLister"
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
-local frame = Instance.new("Frame")
-frame.Parent = listGui
-frame.Size = UDim2.new(0.3, 0, 0.5, 0)
-frame.Position = UDim2.new(0.65, 0, 0.25, 0)
-frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-frame.Active = true
-frame.Draggable = true
+-- Create main frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Parent = screenGui
+mainFrame.Size = UDim2.new(0.3, 0, 0.5, 0)
+mainFrame.Position = UDim2.new(0.35, 0, 0.25, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+mainFrame.Active = true
+mainFrame.Draggable = true
 
-local title = Instance.new("TextLabel")
-title.Parent = frame
-title.Size = UDim2.new(1, 0, 0.1, 0)
-title.BackgroundTransparency = 1
-title.Text = "ReplicatedStorage Items"
-title.Font = Enum.Font.SourceSansBold
-title.TextSize = 22
-title.TextColor3 = Color3.new(1, 1, 1)
+-- Title label
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Parent = mainFrame
+titleLabel.Size = UDim2.new(1, 0, 0.1, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "ReplicatedStorage Items"
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.TextSize = 22
+titleLabel.TextColor3 = Color3.new(1, 1, 1)
 
-local scroll = Instance.new("ScrollingFrame")
-scroll.Parent = frame
-scroll.Size = UDim2.new(1, -10, 0.85, -10)
-scroll.Position = UDim2.new(0, 5, 0.12, 5)
-scroll.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-scroll.ScrollBarThickness = 8
-scroll.BorderSizePixel = 0
+-- ScrollingFrame for item list
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Parent = mainFrame
+scrollFrame.Size = UDim2.new(1, -10, 0.85, -10)
+scrollFrame.Position = UDim2.new(0, 5, 0.12, 5)
+scrollFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+scrollFrame.ScrollBarThickness = 8
+scrollFrame.BorderSizePixel = 0
 
-local layout = Instance.new("UIListLayout")
-layout.Parent = scroll
-layout.SortOrder = Enum.SortOrder.LayoutOrder
-layout.Padding = UDim.new(0, 4)
+-- UIListLayout for vertical stacking
+local listLayout = Instance.new("UIListLayout")
+listLayout.Parent = scrollFrame
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+listLayout.Padding = UDim.new(0, 4)
 
-local function addItemLabel(parent, text, indent)
-    local label = Instance.new("TextLabel")
-    label.Parent = parent
-    label.Size = UDim2.new(1, -10, 0, 24)
-    label.BackgroundTransparency = 1
-    label.Text = string.rep("    ", indent) .. text
-    label.Font = Enum.Font.SourceSans
-    label.TextSize = 18
-    label.TextColor3 = Color3.new(1, 1, 1)
-    label.TextXAlignment = Enum.TextXAlignment.Left
-end
-
-local function listFolderItems(folder, indent)
-    for _, item in ipairs(folder:GetChildren()) do
-        addItemLabel(scroll, item.Name .. " (" .. item.ClassName .. ")", indent)
-        if item.ClassName == "Folder" then
-            listFolderItems(item, indent + 1)
-        end
-    end
-end
-
+-- Function to list items
 local function listItems()
     -- Clear previous
-    for _, child in ipairs(scroll:GetChildren()) do
+    for _, child in ipairs(scrollFrame:GetChildren()) do
         if child:IsA("TextLabel") then
             child:Destroy()
         end
     end
 
-    -- List all items in ReplicatedStorage with Folder sub-listing
+    -- List all items in ReplicatedStorage
     for _, item in ipairs(game.ReplicatedStorage:GetChildren()) do
-        addItemLabel(scroll, item.Name .. " (" .. item.ClassName .. ")", 0)
-        if item.ClassName == "Folder" then
-            listFolderItems(item, 1)
-        end
+        local label = Instance.new("TextLabel")
+        label.Parent = scrollFrame
+        label.Size = UDim2.new(1, -10, 0, 24)
+        label.BackgroundTransparency = 1
+        label.Text = item.Name
+        label.Font = Enum.Font.SourceSans
+        label.TextSize = 18
+        label.TextColor3 = Color3.new(1, 1, 1)
+        label.TextXAlignment = Enum.TextXAlignment.Left
     end
 
     -- Update canvas size
-    local count = 0
-    local function countLabels(obj)
-        for _, child in ipairs(obj:GetChildren()) do
-            if child:IsA("TextLabel") then
-                count = count + 1
-            end
-        end
-    end
-    countLabels(scroll)
-    scroll.CanvasSize = UDim2.new(0, 0, 0, count * 28)
+    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, #game.ReplicatedStorage:GetChildren() * 28)
 end
 
 listItems()
 
-local refresh = Instance.new("TextButton")
-refresh.Parent = frame
-refresh.Size = UDim2.new(0.25, 0, 0.08, 0)
-refresh.Position = UDim2.new(0.72, 0, 0.01, 0)
-refresh.Text = "Refresh"
-refresh.Font = Enum.Font.SourceSansBold
-refresh.TextSize = 16
-refresh.TextColor3 = Color3.new(1, 1, 1)
-refresh.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+-- Optional: Refresh button
+local refreshButton = Instance.new("TextButton")
+refreshButton.Parent = mainFrame
+refreshButton.Size = UDim2.new(0.25, 0, 0.08, 0)
+refreshButton.Position = UDim2.new(0.72, 0, 0.01, 0)
+refreshButton.Text = "Refresh"
+refreshButton.Font = Enum.Font.SourceSansBold
+refreshButton.TextSize = 16
+refreshButton.TextColor3 = Color3.new(1, 1, 1)
+refreshButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 
-refresh.MouseButton1Click:Connect(listItems)
+refreshButton.MouseButton1Click:Connect(listItems)
