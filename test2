@@ -39,6 +39,9 @@ layout.Parent = scroll
 layout.SortOrder = Enum.SortOrder.LayoutOrder
 layout.Padding = UDim.new(0, 2)
 
+-- Store collapse state for each folder
+local collapseState = {}
+
 -- Helper to create a label or folder row
 local function createRow(parent, text, indent, isFolder, collapsed, onCollapse)
     local row = Instance.new("Frame")
@@ -86,13 +89,14 @@ local function createRow(parent, text, indent, isFolder, collapsed, onCollapse)
     return row
 end
 
--- Recursive listing with collapse state
-local collapseState = {}
-
 local function listFolderItems(folder, indent)
     for _, item in ipairs(folder:GetChildren()) do
         if item.ClassName == "Folder" then
-            local collapsed = collapseState[item] or false
+            -- Default collapsed unless already set
+            if collapseState[item] == nil then
+                collapseState[item] = true
+            end
+            local collapsed = collapseState[item]
             createRow(scroll, item.Name .. " (" .. item.ClassName .. ")", indent, true, collapsed, function()
                 collapseState[item] = not collapsed
                 listItems()
@@ -116,7 +120,11 @@ function listItems()
 
     for _, item in ipairs(game.ReplicatedStorage:GetChildren()) do
         if item.ClassName == "Folder" then
-            local collapsed = collapseState[item] or false
+            -- Default collapsed unless already set
+            if collapseState[item] == nil then
+                collapseState[item] = true
+            end
+            local collapsed = collapseState[item]
             createRow(scroll, item.Name .. " (" .. item.ClassName .. ")", 0, true, collapsed, function()
                 collapseState[item] = not collapsed
                 listItems()
