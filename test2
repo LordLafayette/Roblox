@@ -89,27 +89,6 @@ local function createRow(parent, text, indent, isFolder, collapsed, onCollapse)
     return row
 end
 
-local function listFolderItems(folder, indent)
-    for _, item in ipairs(folder:GetChildren()) do
-        if item.ClassName == "Folder" then
-            -- Default collapsed unless already set
-            if collapseState[item] == nil then
-                collapseState[item] = true
-            end
-            local collapsed = collapseState[item]
-            createRow(scroll, item.Name .. " (" .. item.ClassName .. ")", indent, true, collapsed, function()
-                collapseState[item] = not collapsed
-                listItems()
-            end)
-            if not collapsed then
-                listFolderItems(item, indent + 1)
-            end
-        else
-            createRow(scroll, item.Name .. " (" .. item.ClassName .. ")", indent, false)
-        end
-    end
-end
-
 function listItems()
     -- Clear previous
     for _, child in ipairs(scroll:GetChildren()) do
@@ -119,7 +98,7 @@ function listItems()
     end
 
     for _, item in ipairs(game.ReplicatedStorage:GetChildren()) do
-        if item.ClassName == "Folder" then
+        if item.ClassName == "Folder" or item.ClassName == "Model" then
             -- Default collapsed unless already set
             if collapseState[item] == nil then
                 collapseState[item] = true
@@ -145,6 +124,27 @@ function listItems()
         end
     end
     scroll.CanvasSize = UDim2.new(0, 0, 0, count * 26)
+end
+
+-- Update listFolderItems to support Model as expandable
+local function listFolderItems(folderOrModel, indent)
+    for _, item in ipairs(folderOrModel:GetChildren()) do
+        if item.ClassName == "Folder" or item.ClassName == "Model" then
+            if collapseState[item] == nil then
+                collapseState[item] = true
+            end
+            local collapsed = collapseState[item]
+            createRow(scroll, item.Name .. " (" .. item.ClassName .. ")", indent, true, collapsed, function()
+                collapseState[item] = not collapsed
+                listItems()
+            end)
+            if not collapsed then
+                listFolderItems(item, indent + 1)
+            end
+        else
+            createRow(scroll, item.Name .. " (" .. item.ClassName .. ")", indent, false)
+        end
+    end
 end
 
 listItems()
